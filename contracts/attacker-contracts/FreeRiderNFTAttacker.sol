@@ -24,7 +24,13 @@ contract FreeRiderNFTAttacker is IUniswapV2Callee, IERC721Receiver {
     IERC721 private immutable nft;
     address private immutable owner;
 
-    constructor(IUniswapV2Pair _swapPair, address _buyer, IERC721 _nft, IVulMarket _market) payable {
+    constructor(
+        IUniswapV2Pair _swapPair,
+        address _buyer,
+        IERC721 _nft,
+        IVulMarket _market
+    ) 
+    {
         swapPair = _swapPair;
         buyer = _buyer;
         market = _market;
@@ -34,7 +40,15 @@ contract FreeRiderNFTAttacker is IUniswapV2Callee, IERC721Receiver {
 
     receive () external payable {}
 
-    function uniswapV2Call(address sender, uint amount0, uint amount1, bytes calldata /*data*/) override external {
+    function uniswapV2Call(
+        address sender,
+        uint amount0,
+        uint amount1,
+        bytes calldata /*data*/
+    )
+     override
+     external 
+    {
         require(msg.sender == address(swapPair), "only for swap-pair");
         require(sender == owner, "tx from owner");
         require(amount0 == 15 ether, "15 ether for this attacker");
