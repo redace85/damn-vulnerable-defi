@@ -15,7 +15,7 @@ interface IGnosisSafeProxyFactory {
     ) external returns (address proxy);
 }
 
-contract BackdorrAttacker {
+contract BackdoorAttacker {
     IGnosisSafeProxyFactory private immutable factory;
     IProxyCreationCallback private immutable walletRegistry;
     address private immutable singleton;

